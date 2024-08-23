@@ -8,7 +8,7 @@
 
 <body>
   <section class="form-section">
-    <form id="lift-sys-inputs" onsubmit="renderLiftSystem(event)">
+    <form id="lift-system-inputs" onsubmit="renderLiftSystem(event)">
       <label for="floor">Enter no of floors</label>
       <input min="1" type="number" name="floor" placeholder="any number.." required />
       <label for="lift">Enter no of lifts</label>
@@ -17,21 +17,32 @@
     </form>
   </section>
   <section class="lift-system-section">
+    <div class="floors-wrapper"></div>
+    <div class="lifts-wrapper"></div>
   </section>
   <template id="floor-template">
     <div class="floor-wrapper">
       <div class="controls-wrapper">
         <div class="floor-no"></div>
         <div class="controls">
-          <button class="up">up</button>
-          <button class="down">down</button>
+          <button class="up"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none">
+              <path d="M12 6V18M12 6L7 11M12 6L17 11" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg></button>
+          <button class="down"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none">
+              <path d="M12 6V18M12 18L7 13M12 18L17 13" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg></button>
         </div>
       </div>
-      <div class="lifts-wrapper"></div>
     </div>
   </template>
   <template id="lift-template">
-    <div class="lift"></div>
+    <div class="lift-track">
+      <div class="lift"></div>
+    </div>
   </template>
 </body>
 <script src="lift.js"></script>

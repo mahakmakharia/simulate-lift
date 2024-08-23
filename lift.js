@@ -1,4 +1,4 @@
-window.q$ = {
+let q$ = {
   elem: null,
   select(selector, element) {
     const mountElem = element || document;
@@ -135,18 +135,67 @@ window.q$ = {
   },
 };
 
-function callLiftUp(floorNo) {}
+let liftsMap = [];
 
-function callLiftDown(floorNo) {}
+const DIRECTIONS = {
+  UP: 'UP',
+  DOWN: 'DOWN',
+  IDLE: 'IDLE',
+};
+
+function openLift(id) {
+  q$.select(`.lift-${id}`).addClass('open-lift');
+  setTimeout(() => {
+    q$.select(`.lift-${id}`).removeClass('open-lift');
+    liftsMap[id - 1].direction = DIRECTIONS.IDLE;
+  }, 2500);
+}
+
+function moveLift(id, direction, floorNo) {
+  const lift = liftsMap[id - 1];
+  let diff = Math.abs(lift.currentFloor - floorNo);
+  lift.currentFloor = floorNo;
+  lift.direction = direction;
+  // debugger
+  liftsMap[id - 1] = lift;
+  console.log(liftsMap);
+  q$.select(`.lift-${lift.id}`)
+    .setStyleProperty('transition', `transform ${diff * 2}s ease-in`)
+    .setStyleProperty('transform', `translateY(-${96 * (floorNo - 1)}px)`);
+  setTimeout(() => {
+    openLift(id);
+  }, diff * 2000);
+}
+
+function callLift(direction, floorNo) {
+  const copy = [...liftsMap];
+  sortedMap = copy.sort(
+    (a, b) =>
+      Math.abs(a.currentFloor - floorNo) - Math.abs(b.currentFloor - floorNo)
+  );
+
+  // console.log({liftsMap, sortedMap});
+  let lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.IDLE);
+
+  if (!lift) {
+    lift = sortedMap[0];
+  }
+
+  if (lift.currentFloor === floorNo) {
+    openLift(lift.id);
+  } else {
+    moveLift(lift.id, direction, floorNo);
+  }
+}
 
 function renderLiftSystem(e) {
   e.preventDefault();
+  liftsMap = [];
   const form = e.currentTarget;
   const formValues = new FormData(form);
   const lifts = formValues.get('lift');
   const floors = formValues.get('floor');
-
-  const wrapper = q$.select('.lift-system-section').modifyInnerHTML('').elem;
+  const wrapper = q$.select('.floors-wrapper').modifyInnerHTML('').elem;
   for (let i = floors; i >= 1; i--) {
     const floor = q$
       .selectById('floor-template')
@@ -154,21 +203,21 @@ function renderLiftSystem(e) {
       .addClass(`floor-${i}`).elem;
 
     q$.select('.floor-no', floor).modifyTextContent(i);
-    q$.select('button.up', floor).setAttribute('onclick', `callLiftUp(${i})`);
+    q$.select('button.up', floor).setAttribute(
+      'onclick',
+      `callLift('${DIRECTIONS.UP}',${i})`
+    );
     q$.select('button.down', floor).setAttribute(
       'onclick',
-      `callLiftDown(${i})`
+      `callLift('${DIRECTIONS.DOWN}',${i})`
     );
-
-    if (i === 1) {
-      for (let j = 1; j <= lifts; j++) {
-        const lift = q$
-          .selectById('lift-template')
-          .getTemplateContent()
-          .addClass(`lift-${j}`).elem;
-        q$.select('.lifts-wrapper', floor).appendChild(lift);
-      }
-    }
     wrapper.appendChild(floor);
+  }
+  q$.select('.lifts-wrapper').modifyInnerHTML('');
+  for (let j = 1; j <= lifts; j++) {
+    liftsMap.push({ id: j, direction: DIRECTIONS.IDLE, currentFloor: 1 });
+    const lift = q$.selectById('lift-template').getTemplateContent().elem;
+    q$.select('.lift', lift).addClass(`lift-${j}`);
+    q$.select('.lifts-wrapper').appendChild(lift);
   }
 }

@@ -1,24 +1,61 @@
+.hidden {
+  display: none;
+}
+
+.lift-system-section {
+  position: relative;
+  padding: 0px 16px;
+}
+.floor-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 80px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid black;
+  overflow-x: auto;
+}
+
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 112px;
+}
+
+.controls-wrapper .floor-no {
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.controls-wrapper .controls {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.lifts-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  position: absolute;
+  top: 0;
+  bottom: 0px;
+  left: 112px;
+  width: calc(100% - 112px);
+  overflow-x: auto;
+}
+
+.lift-track {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
 .lift {
   height: 80px;
   width: 60px;
   background-color: black;
   margin: 0px 10px;
-}
-
-.hidden {
-  display: none;
-}
-
-.floor-wrapper {
-  display: flex;
-  justify-content: flex-start;
-  height: 80px;
-  padding: 16px 0px;
-  border-bottom: 1px solid black;
-  overflow-x: auto;
-}
-
-.floor-wrapper .lifts-wrapper {
-  display: flex;
-  justify-content: flex-start;
 }
