@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Lift Simulation</title>
+  <link rel="stylesheet" href="lift.css" />
+</head>
+
+<body>
+  <section class="form-section">
+    <form id="lift-sys-inputs" onsubmit="renderLiftSystem(event)">
+      <label for="floor">Enter no of floors</label>
+      <input min="1" type="number" name="floor" placeholder="any number.." required />
+      <label for="lift">Enter no of lifts</label>
+      <input min="1" type="number" name="lift" placeholder="any number.." required />
+      <button onsubmit="renderLiftSystem(event)">Submit</button>
+    </form>
+  </section>
+  <section class="lift-system-section">
+  </section>
+  <template id="floor-template">
+    <div class="floor-wrapper">
+      <div class="controls-wrapper">
+        <div class="floor-no"></div>
+        <div class="controls">
+          <button class="up">up</button>
+          <button class="down">down</button>
+        </div>
+      </div>
+      <div class="lifts-wrapper"></div>
+    </div>
+  </template>
+  <template id="lift-template">
+    <div class="lift"></div>
+  </template>
+</body>
+<script src="lift.js"></script>
+
+</html>
