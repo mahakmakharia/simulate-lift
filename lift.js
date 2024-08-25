@@ -165,7 +165,7 @@ function openLift(id, direction, floorNo) {
       pendingReqeusts.shift();
       callLift(request.direction, request.floorNo);
     }
-  }, 2500);
+  }, 5000);
 }
 
 function moveLift(id, direction, floorNo) {

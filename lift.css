@@ -170,11 +170,11 @@ body {
 }
 
 .open-lift .left-gate {
-  animation: sliding-doors-left 2.5s ease-in-out;
+  animation: sliding-doors-left 5s ease-in-out;
 }
 
 .open-lift .right-gate {
-  animation: sliding-doors-right 2.5s ease-in-out;
+  animation: sliding-doors-right 5s ease-in-out;
 }
 
 @keyframes sliding-doors-left {
