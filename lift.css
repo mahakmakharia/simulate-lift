@@ -15,7 +15,7 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .text-center {
@@ -48,8 +48,15 @@ body {
 }
 
 .input-wrapper input {
-  height: 28px;
-  padding: 8px;
+  height: 32px;
+  padding: 4px 8px;
+  font-size: 18px;
+  border-radius: 4px;
+  border: 1px solid #d6d3d3;
+}
+
+.input-wrapper input:focus {
+  border-color: #874ed1;
 }
 
 .submit-button {

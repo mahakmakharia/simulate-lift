@@ -240,6 +240,10 @@ function renderLiftSystem(e) {
     q$.select('button.down', floor)
       .addClass(`button-down-${i}`)
       .setAttribute('onclick', `callLift('${DIRECTIONS.DOWN}',${i})`);
+
+    if (i == 1) q$.select('button.down', floor).addClass('hidden');
+    if (i == floors) q$.select('button.up', floor).addClass('hidden');
+
     wrapper.appendChild(floor);
   }
 
