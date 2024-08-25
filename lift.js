@@ -1,4 +1,4 @@
-let q$ = {
+const q$ = {
   elem: null,
   select(selector, element) {
     const mountElem = element || document;
@@ -135,54 +135,81 @@ let q$ = {
   },
 };
 
-let liftsMap = [];
-
 const DIRECTIONS = {
   UP: 'UP',
   DOWN: 'DOWN',
   IDLE: 'IDLE',
 };
 
-function openLift(id) {
+const STATUS = {
+  ACTIVE: 'ACTIVE',
+  WAITING: 'WAITING',
+  FULLFILLED: 'FULLFILLED',
+};
+
+let liftsMap = [],
+  pendingReqeusts = [];
+
+function openLift(id, direction, floorNo) {
   q$.select(`.lift-${id}`).addClass('open-lift');
+
   setTimeout(() => {
     q$.select(`.lift-${id}`).removeClass('open-lift');
+    q$.select(`.button-${direction.toLowerCase()}-${floorNo}`)
+      .removeClass('active')
+      .setDataAttribute('status', STATUS.FULLFILLED);
+
     liftsMap[id - 1].direction = DIRECTIONS.IDLE;
+    if (pendingReqeusts.length) {
+      const request = pendingReqeusts[0];
+      pendingReqeusts.shift();
+      callLift(request.direction, request.floorNo);
+    }
   }, 2500);
 }
 
 function moveLift(id, direction, floorNo) {
-  const lift = liftsMap[id - 1];
-  let diff = Math.abs(lift.currentFloor - floorNo);
-  lift.currentFloor = floorNo;
-  lift.direction = direction;
-  // debugger
-  liftsMap[id - 1] = lift;
-  console.log(liftsMap);
-  q$.select(`.lift-${lift.id}`)
-    .setStyleProperty('transition', `transform ${diff * 2}s ease-in`)
-    .setStyleProperty('transform', `translateY(-${96 * (floorNo - 1)}px)`);
+  let prevFloor = liftsMap[id - 1].currentFloor;
+  liftsMap[id - 1].direction = direction;
+  liftsMap[id - 1].currentFloor = floorNo;
+
+  let diff = Math.abs(prevFloor - floorNo);
+  if (prevFloor === floorNo) {
+    openLift(id, direction, floorNo);
+    return;
+  }
+  q$.select(`.lift-${id}`)
+    .setStyleProperty('transition', `transform ${diff * 2}s ease-in 0s`)
+    .setStyleProperty('transform', `translateY(-${96.5 * (floorNo - 1)}px)`);
+
   setTimeout(() => {
-    openLift(id);
+    openLift(id, direction, floorNo);
   }, diff * 2000);
 }
 
 function callLift(direction, floorNo) {
-  const copy = [...liftsMap];
-  sortedMap = copy.sort(
+  const button = q$.select(
+    `.button-${direction.toLowerCase()}-${floorNo}`
+  ).elem;
+  if (
+    button.classList.contains('active') &&
+    button.dataset.status !== STATUS.WAITING
+  ) {
+    return;
+  }
+  button.classList.add('active');
+  button.dataset.status = STATUS.ACTIVE;
+
+  sortedMap = [...liftsMap].sort(
     (a, b) =>
       Math.abs(a.currentFloor - floorNo) - Math.abs(b.currentFloor - floorNo)
   );
 
-  // console.log({liftsMap, sortedMap});
   let lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.IDLE);
 
   if (!lift) {
-    lift = sortedMap[0];
-  }
-
-  if (lift.currentFloor === floorNo) {
-    openLift(lift.id);
+    pendingReqeusts.push({ direction, floorNo });
+    button.dataset.status = STATUS.WAITING;
   } else {
     moveLift(lift.id, direction, floorNo);
   }
@@ -196,6 +223,9 @@ function renderLiftSystem(e) {
   const lifts = formValues.get('lift');
   const floors = formValues.get('floor');
   const wrapper = q$.select('.floors-wrapper').modifyInnerHTML('').elem;
+
+  if (!lifts || !floors || !wrapper) return;
+
   for (let i = floors; i >= 1; i--) {
     const floor = q$
       .selectById('floor-template')
@@ -203,16 +233,15 @@ function renderLiftSystem(e) {
       .addClass(`floor-${i}`).elem;
 
     q$.select('.floor-no', floor).modifyTextContent(i);
-    q$.select('button.up', floor).setAttribute(
-      'onclick',
-      `callLift('${DIRECTIONS.UP}',${i})`
-    );
-    q$.select('button.down', floor).setAttribute(
-      'onclick',
-      `callLift('${DIRECTIONS.DOWN}',${i})`
-    );
+    q$.select('button.up', floor)
+      .addClass(`button-up-${i}`)
+      .setAttribute('onclick', `callLift('${DIRECTIONS.UP}',${i})`);
+    q$.select('button.down', floor)
+      .addClass(`button-down-${i}`)
+      .setAttribute('onclick', `callLift('${DIRECTIONS.DOWN}',${i})`);
     wrapper.appendChild(floor);
   }
+
   q$.select('.lifts-wrapper').modifyInnerHTML('');
   for (let j = 1; j <= lifts; j++) {
     liftsMap.push({ id: j, direction: DIRECTIONS.IDLE, currentFloor: 1 });

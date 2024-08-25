@@ -27,12 +27,12 @@
         <div class="controls">
           <button class="up"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
               fill="none">
-              <path d="M12 6V18M12 6L7 11M12 6L17 11" stroke="#000000" stroke-width="2" stroke-linecap="round"
+              <path d="M12 6V18M12 6L7 11M12 6L17 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg></button>
           <button class="down"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
               fill="none">
-              <path d="M12 6V18M12 18L7 13M12 18L17 13" stroke="#000000" stroke-width="2" stroke-linecap="round"
+              <path d="M12 6V18M12 18L7 13M12 18L17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg></button>
         </div>
@@ -41,7 +41,10 @@
   </template>
   <template id="lift-template">
     <div class="lift-track">
-      <div class="lift"></div>
+      <div class="lift">
+        <div class="left-gate gate"></div>
+        <div class="right-gate gate"></div>
+      </div>
     </div>
   </template>
 </body>
