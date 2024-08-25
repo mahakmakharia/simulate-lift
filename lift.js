@@ -180,7 +180,7 @@ function moveLift(id, direction, floorNo) {
   }
   q$.select(`.lift-${id}`)
     .setStyleProperty('transition', `transform ${diff * 2}s ease-in 0s`)
-    .setStyleProperty('transform', `translateY(-${96.5 * (floorNo - 1)}px)`);
+    .setStyleProperty('transform', `translateY(-${98 * (floorNo - 1)}px)`);
 
   setTimeout(() => {
     openLift(id, direction, floorNo);
@@ -222,6 +222,7 @@ function renderLiftSystem(e) {
   const formValues = new FormData(form);
   const lifts = formValues.get('lift');
   const floors = formValues.get('floor');
+  q$.select('.lift-system-section').removeClass('hidden');
   const wrapper = q$.select('.floors-wrapper').modifyInnerHTML('').elem;
 
   if (!lifts || !floors || !wrapper) return;

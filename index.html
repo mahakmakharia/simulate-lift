@@ -2,36 +2,56 @@
 <html>
 
 <head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Lift Simulation</title>
   <link rel="stylesheet" href="lift.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap">
+  <link type="text/css" rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap">
+  <style>
+    body {
+      font-family: 'Figtree', 'Helvetica', 'Arial';
+    }
+  </style>
 </head>
 
 <body>
+  <h2 class="heading text-center">Simulate lift system</h2>
   <section class="form-section">
     <form id="lift-system-inputs" onsubmit="renderLiftSystem(event)">
-      <label for="floor">Enter no of floors</label>
-      <input min="1" type="number" name="floor" placeholder="any number.." required />
-      <label for="lift">Enter no of lifts</label>
-      <input min="1" type="number" name="lift" placeholder="any number.." required />
-      <button onsubmit="renderLiftSystem(event)">Submit</button>
+      <div class="input-wrapper">
+        <label for="floor">Enter number of floors</label>
+        <input min="1" type="number" name="floor" placeholder="any number.." required />
+      </div>
+      <div class="input-wrapper">
+        <label for="lift">Enter number of lifts</label>
+        <input min="1" type="number" name="lift" placeholder="any number.." required />
+      </div>
+      <button class="submit-button" onsubmit="renderLiftSystem(event)">Submit</button>
     </form>
   </section>
-  <section class="lift-system-section">
-    <div class="floors-wrapper"></div>
-    <div class="lifts-wrapper"></div>
+  <section class="lift-system-section hidden">
+    <h3 class="heading text-center">Generated Simulation</h2>
+      <div class="floors-wrapper"></div>
+      <div class="lifts-wrapper"></div>
   </section>
   <template id="floor-template">
     <div class="floor-wrapper">
       <div class="controls-wrapper">
         <div class="floor-no"></div>
         <div class="controls">
-          <button class="up"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-              fill="none">
+          <button class="up"><svg color="#000" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+              viewBox="0 0 24 24" fill="none">
               <path d="M12 6V18M12 6L7 11M12 6L17 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg></button>
-          <button class="down"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-              fill="none">
+          <button class="down"><svg color="#000" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+              viewBox="0 0 24 24" fill="none">
               <path d="M12 6V18M12 18L7 13M12 18L17 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg></button>
