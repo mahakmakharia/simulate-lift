@@ -159,7 +159,7 @@ function openLift(id, direction, floorNo) {
       .removeClass('active')
       .setDataAttribute('status', STATUS.FULLFILLED);
 
-    liftsMap[id - 1].direction = DIRECTIONS.IDLE;
+    liftsMap[id].direction = DIRECTIONS.IDLE;
     if (pendingReqeusts.length) {
       const request = pendingReqeusts[0];
       pendingReqeusts.shift();
@@ -169,9 +169,9 @@ function openLift(id, direction, floorNo) {
 }
 
 function moveLift(id, direction, floorNo) {
-  let prevFloor = liftsMap[id - 1].currentFloor;
-  liftsMap[id - 1].direction = direction;
-  liftsMap[id - 1].currentFloor = floorNo;
+  let prevFloor = liftsMap[id].currentDestination;
+  liftsMap[id].direction = direction;
+  liftsMap[id].currentDestination = floorNo;
 
   let diff = Math.abs(prevFloor - floorNo);
   if (prevFloor === floorNo) {
@@ -202,7 +202,7 @@ function callLift(direction, floorNo) {
 
   sortedMap = [...liftsMap].sort(
     (a, b) =>
-      Math.abs(a.currentFloor - floorNo) - Math.abs(b.currentFloor - floorNo)
+      Math.abs(a.currentDestination - floorNo) - Math.abs(b.currentDestination - floorNo)
   );
 
   let lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.IDLE);
@@ -248,8 +248,8 @@ function renderLiftSystem(e) {
   }
 
   q$.select('.lifts-wrapper').modifyInnerHTML('');
-  for (let j = 1; j <= lifts; j++) {
-    liftsMap.push({ id: j, direction: DIRECTIONS.IDLE, currentFloor: 1 });
+  for (let j = 0; j < lifts; j++) {
+    liftsMap.push({ id: j, direction: DIRECTIONS.IDLE, currentDestination: 1 });
     const lift = q$.selectById('lift-template').getTemplateContent().elem;
     q$.select('.lift', lift).addClass(`lift-${j}`);
     q$.select('.lifts-wrapper').appendChild(lift);
