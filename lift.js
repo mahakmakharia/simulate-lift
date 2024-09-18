@@ -182,9 +182,8 @@ function moveLift(id, direction, floorNo) {
   let prevFloor = liftsMap[id].currentDestination;
   liftsMap[id].direction = direction;
   liftsMap[id].currentDestination = floorNo;
-  liftsMap[id].activeFloor = prevFloor;
 
-  let gap = prevFloor - floorNo;
+  let gap = liftsMap[id].activeFloor - floorNo;
   let diff = Math.abs(gap);
   let count = 0;
 
@@ -192,7 +191,6 @@ function moveLift(id, direction, floorNo) {
     openLift(id, direction, floorNo);
     return;
   }
-
   if (gap < 0) {
     liftsMap[id].pathDirection = DIRECTIONS.UP;
   } else {
@@ -222,6 +220,7 @@ function sortArray(arr, order) {
 
 function handleStops(id) {
   const stops = liftsMap[id].stops;
+  // console.log({ stops, id });
   if (stops?.length && liftsMap[id].currentDestination !== stops?.[0]) {
     clearInterval(liftsMap[id].floorInterval);
     clearTimeout(liftsMap[id].openLiftTimeout);
@@ -261,8 +260,6 @@ function callLift(direction, floorNo) {
 
     lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.UP);
 
-    let flag = false;
-
     if (lift) {
       flag = !lift?.stops;
 
@@ -279,14 +276,15 @@ function callLift(direction, floorNo) {
           Math.abs(lift.stops[lift.stops.length - 1] - floorNo) ||
         (floorNo > lift.activeFloor && floorNo < lift.currentDestination)
       ) {
-        lift.stops = lift.stops = [...lift.stops, floorNo];
+        lift.stops = [...lift.stops, floorNo];
       }
 
       if (lift?.stops?.length) {
         lift.stops = sortArray(lift.stops, 'asc');
         liftsMap[lift.id] = { ...lift };
         if (lift.stops.indexOf(floorNo) >= 0) {
-          if (flag) return handleStops(lift.id);
+          if (lift.stops[0] < lift.currentDestination)
+            return handleStops(lift.id);
           return;
         }
       }
@@ -295,8 +293,6 @@ function callLift(direction, floorNo) {
     }
   } else if (direction === DIRECTIONS.DOWN) {
     lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.DOWN);
-
-    let flag = false;
 
     if (lift && lift.pathDirection === DIRECTIONS.DOWN) {
       flag = !lift?.stops;
@@ -314,7 +310,8 @@ function callLift(direction, floorNo) {
         liftsMap[lift.id] = { ...lift };
 
         if (lift.stops.indexOf(floorNo) >= 0) {
-          if (flag) return handleStops(lift.id);
+          if (lift.stops[0] > lift.currentDestination)
+            return handleStops(lift.id);
           return;
         }
       }
@@ -340,6 +337,7 @@ function renderLiftSystem(e) {
     clearTimeout(lift.openLiftTimeout);
   });
   liftsMap = [];
+  pendingReqeusts = [];
   const form = e.currentTarget;
   const formValues = new FormData(form);
   const lifts = formValues.get('lift');
