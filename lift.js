@@ -150,6 +150,21 @@ const STATUS = {
 let liftsMap = [],
   pendingReqeusts = [];
 
+function processQueuedRequests(id) {
+  const len = liftsMap[id]?.stops?.length || 0;
+  if (len > 0) {
+    liftsMap[id].stops.shift();
+    if (len > 1) return handleStops(id);
+  }
+
+  liftsMap[id].direction = DIRECTIONS.IDLE;
+  if (pendingReqeusts.length) {
+    const request = pendingReqeusts[0];
+    pendingReqeusts.shift();
+    callLift(request.direction, request.floorNo);
+  }
+}
+
 function openLift(id, direction, floorNo) {
   q$.select(`.lift-${id}`).addClass('open-lift');
 
@@ -159,12 +174,7 @@ function openLift(id, direction, floorNo) {
       .removeClass('active')
       .setDataAttribute('status', STATUS.FULLFILLED);
 
-    liftsMap[id].direction = DIRECTIONS.IDLE;
-    if (pendingReqeusts.length) {
-      const request = pendingReqeusts[0];
-      pendingReqeusts.shift();
-      callLift(request.direction, request.floorNo);
-    }
+    processQueuedRequests(id);
   }, 5000);
 }
 
@@ -172,19 +182,51 @@ function moveLift(id, direction, floorNo) {
   let prevFloor = liftsMap[id].currentDestination;
   liftsMap[id].direction = direction;
   liftsMap[id].currentDestination = floorNo;
+  liftsMap[id].activeFloor = prevFloor;
 
-  let diff = Math.abs(prevFloor - floorNo);
+  let gap = prevFloor - floorNo;
+  let diff = Math.abs(gap);
+  let count = 0;
+
   if (prevFloor === floorNo) {
     openLift(id, direction, floorNo);
     return;
   }
+
+  if (gap < 0) {
+    liftsMap[id].pathDirection = DIRECTIONS.UP;
+  } else {
+    liftsMap[id].pathDirection = DIRECTIONS.DOWN;
+  }
+
   q$.select(`.lift-${id}`)
     .setStyleProperty('transition', `transform ${diff * 2}s ease-in 0s`)
     .setStyleProperty('transform', `translateY(-${98 * (floorNo - 1)}px)`);
 
-  setTimeout(() => {
+  liftsMap[id].floorInterval = setInterval(() => {
+    count++;
+    liftsMap[id].activeFloor +=
+      liftsMap[id].pathDirection === DIRECTIONS.UP ? 1 : -1;
+  }, 2000);
+
+  liftsMap[id].openLiftTimeout = setTimeout(() => {
+    clearInterval(liftsMap[id].floorInterval);
     openLift(id, direction, floorNo);
   }, diff * 2000);
+}
+
+function sortArray(arr, order) {
+  if (order === 'asc') return arr.sort((a, b) => a - b);
+  return arr.sort((a, b) => b - a);
+}
+
+function handleStops(id) {
+  const stops = liftsMap[id].stops;
+  if (stops?.length && liftsMap[id].currentDestination !== stops?.[0]) {
+    clearInterval(liftsMap[id].floorInterval);
+    clearTimeout(liftsMap[id].openLiftTimeout);
+    moveLift(id, liftsMap[id].direction, stops[0]);
+  }
 }
 
 function callLift(direction, floorNo) {
@@ -202,10 +244,86 @@ function callLift(direction, floorNo) {
 
   sortedMap = [...liftsMap].sort(
     (a, b) =>
-      Math.abs(a.currentDestination - floorNo) - Math.abs(b.currentDestination - floorNo)
+      Math.abs(a.activeFloor - floorNo) - Math.abs(b.activeFloor - floorNo)
   );
 
   let lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.IDLE);
+  if (lift?.currentDestination === floorNo) {
+    liftsMap[lift.id].direction = direction;
+    openLift(lift.id, direction, floorNo);
+    return;
+  }
+
+  if (direction === DIRECTIONS.UP) {
+    let closestLiftFreeLift = sortedMap.find(
+      (lift) => lift.direction === DIRECTIONS.IDLE
+    );
+
+    lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.UP);
+
+    let flag = false;
+
+    if (lift) {
+      flag = !lift?.stops;
+
+      if (!lift.stops) {
+        if (
+          Math.abs((closestLiftFreeLift?.currentDestination || 0) - floorNo) >
+            Math.abs(lift.currentDestination - floorNo) ||
+          (floorNo > lift.activeFloor && floorNo < lift.currentDestination)
+        ) {
+          lift.stops = [floorNo, lift.currentDestination];
+        }
+      } else if (
+        Math.abs((closestLiftFreeLift?.currentDestination || 0) - floorNo) >
+          Math.abs(lift.stops[lift.stops.length - 1] - floorNo) ||
+        (floorNo > lift.activeFloor && floorNo < lift.currentDestination)
+      ) {
+        lift.stops = lift.stops = [...lift.stops, floorNo];
+      }
+
+      if (lift?.stops?.length) {
+        lift.stops = sortArray(lift.stops, 'asc');
+        liftsMap[lift.id] = { ...lift };
+        if (lift.stops.indexOf(floorNo) >= 0) {
+          if (flag) return handleStops(lift.id);
+          return;
+        }
+      }
+
+      lift = {};
+    }
+  } else if (direction === DIRECTIONS.DOWN) {
+    lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.DOWN);
+
+    let flag = false;
+
+    if (lift && lift.pathDirection === DIRECTIONS.DOWN) {
+      flag = !lift?.stops;
+
+      if (!lift.stops) {
+        if (floorNo > lift.currentDestination) {
+          lift.stops = [floorNo, lift.currentDestination];
+        }
+      } else if (floorNo > lift.currentDestination) {
+        lift.stops = [...lift.stops, floorNo];
+      }
+
+      if (lift?.stops?.length) {
+        lift.stops = sortArray(lift.stops, 'desc');
+        liftsMap[lift.id] = { ...lift };
+
+        if (lift.stops.indexOf(floorNo) >= 0) {
+          if (flag) return handleStops(lift.id);
+          return;
+        }
+      }
+
+      lift = {};
+    }
+  }
+
+  lift = sortedMap.find((lift) => lift.direction === DIRECTIONS.IDLE);
 
   if (!lift) {
     pendingReqeusts.push({ direction, floorNo });
@@ -217,6 +335,10 @@ function callLift(direction, floorNo) {
 
 function renderLiftSystem(e) {
   e.preventDefault();
+  liftsMap.forEach((lift) => {
+    clearInterval(lift.floorInterval);
+    clearTimeout(lift.openLiftTimeout);
+  });
   liftsMap = [];
   const form = e.currentTarget;
   const formValues = new FormData(form);
@@ -249,7 +371,12 @@ function renderLiftSystem(e) {
 
   q$.select('.lifts-wrapper').modifyInnerHTML('');
   for (let j = 0; j < lifts; j++) {
-    liftsMap.push({ id: j, direction: DIRECTIONS.IDLE, currentDestination: 1 });
+    liftsMap.push({
+      id: j,
+      direction: DIRECTIONS.IDLE,
+      currentDestination: 1,
+      activeFloor: 1,
+    });
     const lift = q$.selectById('lift-template').getTemplateContent().elem;
     q$.select('.lift', lift).addClass(`lift-${j}`);
     q$.select('.lifts-wrapper').appendChild(lift);
